@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
+#include <queue>
 
 
 using namespace std;
@@ -36,11 +37,44 @@ public:
 
 void FillData(vector<SensorData> &v);
 time_t CreateTime(int year, int month, int day, int hour, int minute, int second);
+//Del 4:
+
+/*
+QUEUE:
+Skapa en "vårdcentralsimulator". Oändlig loop där man kan göra två saker:
+
+"stoppa" in en ny kund i väntekön. En kund är en klass med Kölappsnummer (ex 12), Namn och Tid när den ankom
+"ropa in nästa kund " (Då ska du skriva ut denna kund har väntat "i  28 sekunder" eller vad det är)
+*/
+
+class Customer
+{
+	int number;
+	string name;
+	time_t time;
+public:
+	Customer(int number, string name, time_t time)
+	{
+		this->number = number;
+		this->name = name;
+		this->time = time;
+	}
+	int GetNumber() const { return number; }
+	string GetName() const { return name; }
+	time_t GetTime() const { return time; }
+};
+
+
+void FillData(vector<Customer> &v);
+time_t CreateTime(int year, int month, int day, int hour, int minute, int second);
+
+
 
 int main()
 {
 	vector<SensorData> sensorData;
 	FillData(sensorData);
+
 
 	//SKRIV DIN KOD HÄR!!!!
 	time_t startOfDay = CreateTime(2012, 1, 2, 0, 0, 0);
@@ -91,6 +125,49 @@ int main()
 		cout << "Först record on fuelcosnumption: " << indx2->GetValue()<<" liter" << endl;
 	else
 		cout << "Inga records on fuelcosnumption" << endl;
+
+	//del 4
+	queue <Customer> q;
+	time_t tid = CreateTime(2012, 1, 1, 1, 1, 1);
+	for (int i = 0; i < 100; i++)
+	{
+		q.push(Customer(i, "Kund" + to_string(i), tid));
+		tid = tid + rand() % 10 + 1;
+	}
+	while (true)
+	{
+		cout << "1. Add customer" << endl;
+		cout << "2. Call next customer" << endl;
+		cout << "0. Exit" << endl;
+		cout << "Choice: " << endl;
+		cout << "Queue size: " << q.size() << endl;
+		
+		int choice;
+		cin >> choice;
+		if (choice == 1)
+		{
+			cout << "Enter name: ";
+			string name;
+			cin >> name;
+			q.push(Customer(q.size(), name, time(NULL)));
+		}
+		else if (choice == 2)
+		{
+			Customer c = q.front();
+			q.pop();
+			cout << "Next customer is: " << c.GetName() << endl;
+			cout << "Customer has waited: " << time(NULL) - c.GetTime() << " seconds" << endl;
+		}else if (choice == 0)
+		{
+			break;
+		}
+		else
+		{
+			cout << "Invalid choice" << endl;
+		}
+		
+	}
+	return 0;
 
 }
 
