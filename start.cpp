@@ -5,6 +5,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <queue>
+#include <map>
+
 
 
 using namespace std;
@@ -39,14 +41,6 @@ void FillData(vector<SensorData> &v);
 time_t CreateTime(int year, int month, int day, int hour, int minute, int second);
 //Del 4:
 
-/*
-QUEUE:
-Skapa en "vårdcentralsimulator". Oändlig loop där man kan göra två saker:
-
-"stoppa" in en ny kund i väntekön. En kund är en klass med Kölappsnummer (ex 12), Namn och Tid när den ankom
-"ropa in nästa kund " (Då ska du skriva ut denna kund har väntat "i  28 sekunder" eller vad det är)
-*/
-
 class Customer
 {
 	int number;
@@ -68,72 +62,47 @@ public:
 void FillData(vector<Customer> &v);
 time_t CreateTime(int year, int month, int day, int hour, int minute, int second);
 
+//Del 5:
+std::map<int, double> bank;
 
+void createAccount(int accountNumber) {
+    bank[accountNumber] = 0.0;
+}
 
-int main()
-{
-	vector<SensorData> sensorData;
-	FillData(sensorData);
+void login(int accountNumber) {
+    if (bank.find(accountNumber) != bank.end()) {
+        std::cout << "Logged in to account: " << accountNumber << "\n";
+        std::cout << "Current balance: " << bank[accountNumber] << "\n";
+    } else {
+        std::cout << "Account not found.\n";
+    }
+}
 
+void deposit(int accountNumber, double amount) {
+    if (bank.find(accountNumber) != bank.end()) {
+        bank[accountNumber] += amount;
+        std::cout << "Deposit successful. New balance: " << bank[accountNumber] << "\n";
+    } else {
+        std::cout << "Account not found.\n";
+    }
+}
 
-	//SKRIV DIN KOD HÄR!!!!
-	time_t startOfDay = CreateTime(2012, 1, 2, 0, 0, 0);
-    time_t startOfNextDay = CreateTime(2012, 1, 3, 0, 0, 0);
-
-    int count = std::count_if(sensorData.begin(), sensorData.end(),
-        [startOfDay, startOfNextDay](const SensorData& sd) {
-             return sd.GetSensorType() == SensorType::Altitude && 
-                   sd.GetTime() >= startOfDay && 
-                   sd.GetTime() < startOfNextDay;
-        });
-
-    cout << "Antal altituder 2012-01-02: " << count << endl;
-
-	vector<SensorData>::iterator indx = std::find_if(sensorData.begin(), sensorData.end(),
-	[](const SensorData& sd) {
-		return sd.GetSensorType() == SensorType::SpeedInKmh && 
-			sd.GetValue() > 99.9;
-	});
-	if(indx != sensorData.end())
-		cout << "Maxhastighet uppnådd: " << indx->GetValue()<<" Km/h" << endl;
-	else{
-		cout << "Ingen maxhastighet uppnådd" << endl;
-	};
-//del3
-	vector<SensorData>::iterator indx1 = std::find_if(sensorData.begin(), sensorData.end(),
-		[](SensorData& sd) {
-		return sd.GetSensorType() == SensorType::FuelConsumption;
-	});
-	if(indx != sensorData.end())
-		cout << "Först record on fuelcosnumption: " << indx1->GetValue()<<" liter" << endl;
-	else
-		cout << "Inga records on fuelcosnumption" << endl;
-
-	//Skriv kod som uppdaterar alla såna poster så att FuelConsumption ökas med 75%.
-	std::for_each(sensorData.begin(), sensorData.end(),
-		[](SensorData& sd) {
-		if (sd.GetSensorType() == SensorType::FuelConsumption)
-			sd.SetValue(sd.GetValue() * 1.75f);
-	});
-	std::cout << "fuelconsumption ökade med 75%" << std::endl;
-
-	vector<SensorData>::iterator indx2 = std::find_if(sensorData.begin(), sensorData.end(),
-		[](SensorData& sd) {
-		return sd.GetSensorType() == SensorType::FuelConsumption;
-	});
-	if(indx != sensorData.end())
-		cout << "Först record on fuelcosnumption: " << indx2->GetValue()<<" liter" << endl;
-	else
-		cout << "Inga records on fuelcosnumption" << endl;
-
-	//del 4
-	queue <Customer> q;
-	time_t tid = CreateTime(2012, 1, 1, 1, 1, 1);
-	for (int i = 0; i < 100; i++)
-	{
-		q.push(Customer(i, "Kund" + to_string(i), tid));
-		tid = tid + rand() % 10 + 1;
-	}
+void withdraw(int accountNumber, double amount) {
+    if (bank.find(accountNumber) != bank.end()) {
+        if (bank[accountNumber] >= amount) {
+            bank[accountNumber] -= amount;
+            std::cout << "Withdrawal successful. New balance: " << bank[accountNumber] << "\n";
+        } else {
+            std::cout << "Insufficient balance.\n";
+        }
+    } else {
+        std::cout << "Account not found.\n";
+    }
+}
+//del 4
+void vardcentralSimulator(){
+		queue <Customer> q;
+	
 	while (true)
 	{
 		cout << "1. Add customer" << endl;
@@ -155,9 +124,10 @@ int main()
 		{
 			Customer c = q.front();
 			q.pop();
-			cout << "Next customer is: " << c.GetName() << endl;
-			cout << "Customer has waited: " << time(NULL) - c.GetTime() << " seconds" << endl;
-		}else if (choice == 0)
+			std::cout << "Next customer is: " << c.GetName() << endl;
+			std::cout << "Customer has waited: " << time(NULL) - c.GetTime() << " seconds" << endl;
+		}
+		else if (choice == 0)
 		{
 			break;
 		}
@@ -167,12 +137,134 @@ int main()
 		}
 		
 	}
-	return 0;
 
 }
+//del 5
+void bankomatMenu(){
+	int choice, accountNumber;
+    double amount;
+	
+	
+	while (true) {
+        std::cout << "1. Create account\n2. Login\n3. Deposit\n4. Withdraw\n0. Exit\n";
+        std::cin >> choice;
 
-void FillData(vector<SensorData>& v)
+        switch (choice) {
+            case 1:
+                std::cout << "Enter account number: ";
+                std::cin >> accountNumber;
+                createAccount(accountNumber);
+                break;
+            case 2:
+                std::cout << "Enter account number: ";
+                std::cin >> accountNumber;
+                login(accountNumber);
+                break;
+            case 3:
+                std::cout << "Enter account number: ";
+                std::cin >> accountNumber;
+                std::cout << "Enter amount: ";
+                std::cin >> amount;
+                deposit(accountNumber, amount);
+                break;
+            case 4:
+                std::cout << "Enter account number: ";
+                std::cin >> accountNumber;
+                std::cout << "Enter amount: ";
+                std::cin >> amount;
+                withdraw(accountNumber, amount);
+                break;
+            case 0:
+                return;
+            default:
+                std::cout << "Invalid choice.\n";
+        }
+    }
+}
+
+
+int main()
 {
+	vector<SensorData> sensorData;
+	FillData(sensorData);
+
+
+	//SKRIV DIN KOD HÄR!!!!
+	time_t startOfDay = CreateTime(2012, 1, 2, 0, 0, 0);
+    time_t startOfNextDay = CreateTime(2012, 1, 3, 0, 0, 0);
+
+	cout << "Del 1: " << std::endl;
+
+    int count = std::count_if(sensorData.begin(), sensorData.end(),
+        [startOfDay, startOfNextDay](const SensorData& sd) {
+             return sd.GetSensorType() == SensorType::Altitude && 
+                   sd.GetTime() >= startOfDay && 
+                   sd.GetTime() < startOfNextDay;
+        });
+
+    cout << "Antal altituder 2012-01-02: " << count << endl;
+	
+	cout << "Del 2: " << std::endl;
+
+	vector<SensorData>::iterator indx = std::find_if(sensorData.begin(), sensorData.end(),
+	[](const SensorData& sd) {
+		return sd.GetSensorType() == SensorType::SpeedInKmh && 
+			sd.GetValue() > 99.9;
+	});
+	if(indx != sensorData.end())
+		cout << "Maxhastighet uppnådd: " << indx->GetValue()<<" Km/h" << endl;
+	else{
+		cout << "Ingen maxhastighet uppnådd" << endl;
+	};
+//del3
+	cout << "Del 3: " << std::endl;
+	vector<SensorData>::iterator indx1 = std::find_if(sensorData.begin(), sensorData.end(),
+		[](SensorData& sd) {
+		return sd.GetSensorType() == SensorType::FuelConsumption;
+	});
+	if(indx != sensorData.end())
+		cout << "Först record on fuelcosnumption: " << indx1->GetValue()<<" liter" << endl;
+	else
+		cout << "Inga records on fuelcosnumption" << endl;
+
+	//Skriv kod som uppdaterar alla såna poster så att FuelConsumption ökas med 75%.
+	std::for_each(sensorData.begin(), sensorData.end(),
+		[](SensorData& sd) {
+		if (sd.GetSensorType() == SensorType::FuelConsumption)
+			sd.SetValue(sd.GetValue() * 1.75f);
+	});
+	cout << "fuelconsumption ökade med 75%:" << std::endl;
+
+	vector<SensorData>::iterator indx2 = std::find_if(sensorData.begin(), sensorData.end(),
+		[](SensorData& sd) {
+		return sd.GetSensorType() == SensorType::FuelConsumption;
+	});
+	if(indx != sensorData.end())
+		cout << "Först record on fuelcosnumption: " << indx2->GetValue()<<" liter" << endl;
+	else
+		cout << "Inga records on fuelcosnumption" << endl;
+
+	//del 4
+	cout << "Del 4: " << std::endl;
+	vardcentralSimulator();
+
+
+/*DEL 5 VG
+
+Skapa en Bankomat med MAP
+NYCKEL: Kontonummer
+VALUE: saldo
+Skapa en meny där man kan skapa konto. Logga in på konto. Ta ut och sätta in pengar.
+*/
+cout << "Del 5: " << endl;
+bankomatMenu();
+
+	return 0;
+}
+
+
+
+void FillData(vector<SensorData>& v){
 	srand(time(NULL));
 
 	time_t tid = CreateTime(2012, 1, 1, 1, 1, 1 );
