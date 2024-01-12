@@ -249,13 +249,7 @@ int main()
 	vardcentralSimulator();
 
 
-/*DEL 5 VG
-
-Skapa en Bankomat med MAP
-NYCKEL: Kontonummer
-VALUE: saldo
-Skapa en meny där man kan skapa konto. Logga in på konto. Ta ut och sätta in pengar.
-*/
+//del 5
 cout << "Del 5: " << endl;
 bankomatMenu();
 
