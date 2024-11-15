@@ -55,8 +55,8 @@ This repository contains an individual project focused on practicing data struct
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/aalexanderfc/IndividuellDatastrukturochAlgoritmer.git
-   cd IndividuellDatastrukturochAlgoritmer
+   git clone https://github.com/aalexanderfc/Data-Structures-and-Algorithms-Practice.git
+   cd Data-Structures-and-Algorithms-Practice
    ```
 
 2. **Compile the Code**:
